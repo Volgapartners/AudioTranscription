@@ -1,0 +1,41 @@
+# Binaries
+bin/
+/transcribe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Credentials & tokens
+credentials.json
+.token.json
+.env
+
+# Workspace output
+/workspace/
+
+# Test output
+testdata/filled/
+testdata/audio/
+output/
+
+# OS
+*.DS_Store
+Thumbs.db
+
+# IDE
+*.idea/
+*.vscode/
+*.swp
+*.swo
+
+# Claude Code
+*.claude/
+CLAUDE.md
+
+# Docs (internal only)
+Walkthrough.md
+
+# Go
+vendor/
