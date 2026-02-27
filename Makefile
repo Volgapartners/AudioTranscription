@@ -1,8 +1,17 @@
-.PHONY: build run clean test tidy vet fmt lint
+.PHONY: build run clean test tidy vet fmt lint build-windows build-linux build-all
 
-# Build the CLI binary
+# Build the CLI binary (current OS/arch)
 build:
 	go build -o bin/transcribe ./cmd/transcribe
+
+# Cross-platform builds
+build-windows:
+	GOOS=windows GOARCH=amd64 go build -o bin/transcribe-windows-amd64.exe ./cmd/transcribe
+
+build-linux:
+	GOOS=linux GOARCH=amd64 go build -o bin/transcribe-linux-amd64 ./cmd/transcribe
+
+build-all: build build-windows build-linux
 
 # Run the CLI
 run: build
