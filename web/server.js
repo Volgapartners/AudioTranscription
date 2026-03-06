@@ -5,8 +5,8 @@ import express from 'express';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isVercel = process.env.VERCEL === '1';
-// On Vercel, static files live in project root; __dirname can point at the function bundle
-const publicDir = isVercel ? process.cwd() : __dirname;
+// On Vercel, use path set by api/index.js (parent of api/ = project root); else __dirname
+const publicDir = process.env.VERCEL_PUBLIC_DIR || __dirname;
 
 // Load .env from web/ or project root (local only)
 if (!isVercel) {
