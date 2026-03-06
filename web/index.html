@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Transcription Test | Volga</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="brand">Volga</a>
+      <div class="tabs">
+        <a href="index.html" class="tab tab-active">Homepage</a>
+        <a href="saved.html" class="tab">Saved</a>
+        <a href="record.html" class="tab">Record</a>
+      </div>
+      <a href="#">Report</a>
+      <a href="#">FAQ</a>
+    </nav>
+    <div class="header-controls">
+      <span class="timer">00:00:00</span>
+      <span class="timer">00:00:00</span>
+      <button class="btn-secondary">Design Preview</button>
+      <span class="hits">HITs on Page: 1</span>
+      <button class="btn-secondary">Debug</button>
+      <button class="btn-secondary">Exit</button>
+      <span class="icon">🔔</span>
+      <span class="icon">👤</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1 class="title">Audio transcription test</h1>
+    <p class="instruction">Edit the transcript while listening to the audio</p>
+
+    <section class="audio-source">
+      <h2>Audio source</h2>
+      <div class="upload-area">
+        <input type="file" id="audioFile" accept="audio/*" hidden>
+        <button type="button" id="uploadBtn" class="btn-upload">
+          Choose or drop audio file
+        </button>
+        <span id="fileName" class="file-name"></span>
+      </div>
+      <a id="openAudioLink" href="#" target="_blank" class="link" style="display: none;">Open audio in new tab</a>
+      <p id="jsonStatus" class="json-status">JSON status: No transcription yet</p>
+      <div class="api-test">
+        <button type="button" id="testOpenAiBtn" class="btn-secondary">Test OpenAI Key</button>
+        <button type="button" id="testWhisperBtn" class="btn-secondary">Test Whisper</button>
+        <span id="openAiStatus" class="openai-status"></span>
+        <span id="whisperStatus" class="openai-status"></span>
+      </div>
+      <div class="request-preview">
+        <button type="button" id="showRequestBtn" class="btn-secondary">Show Whisper Request</button>
+        <pre id="requestDisplay" class="request-display"></pre>
+      </div>
+    </section>
+
+    <section class="audio-player">
+      <div class="player-controls">
+        <button type="button" id="playBtn" class="btn-play">Play</button>
+        <button type="button" id="rewindBtn" class="btn-small">-2s</button>
+        <button type="button" id="forwardBtn" class="btn-small">+2s</button>
+        <span class="time-display">Time: <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></span>
+        <label>
+          Speed:
+          <select id="speedSelect">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1.0x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2.0x</option>
+          </select>
+        </label>
+        <label class="volume-label">
+          Volume
+          <input type="range" id="volumeSlider" min="0" max="100" value="100">
+        </label>
+        <span id="audioStatus" class="audio-status">No audio loaded</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <section class="utterances-section">
+      <h2>Utterances table (editable)</h2>
+      <p class="output-hint">Output column: transcription_final (JSON string)</p>
+      <div class="table-wrapper">
+        <table class="utterances-table">
+          <thead>
+            <tr>
+              <th>speaker</th>
+              <th>start_time</th>
+              <th>end_time</th>
+              <th>transcript</th>
+              <th>emotion</th>
+              <th>Language</th>
+              <th>Locale</th>
+              <th>Accent</th>
+            </tr>
+          </thead>
+          <tbody id="utterancesBody">
+            <tr class="empty-row">
+              <td colspan="8">Upload an audio file and click "Transcribe" to generate utterances</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="transcribe-actions">
+        <button type="button" id="transcribeBtn" class="btn-transcribe" disabled>
+          Transcribe with Whisper
+        </button>
+        <span id="transcribeStatus" class="transcribe-status"></span>
+      </div>
+      <div class="footer-actions">
+        <label>
+          <input type="checkbox" id="cannotJudge"> Cannot judge
+        </label>
+        <button type="button" id="saveBtn" class="btn-save">Save</button>
+        <button type="button" id="submitBtn" class="btn-submit">Submit</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

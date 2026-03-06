@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Record Audio | Volga</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="brand">Volga</a>
+      <div class="tabs">
+        <a href="index.html" class="tab">Homepage</a>
+        <a href="saved.html" class="tab">Saved</a>
+        <a href="record.html" class="tab tab-active">Record</a>
+      </div>
+      <a href="#">Report</a>
+      <a href="#">FAQ</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="title">Record audio</h1>
+    <p class="instruction">Record audio and save it to the server</p>
+
+    <section class="record-section">
+      <h2>Record</h2>
+      <div class="record-controls">
+        <button type="button" id="recordBtn" class="btn-record">Start recording</button>
+        <button type="button" id="stopBtn" class="btn-stop" disabled>Stop</button>
+        <span id="recordStatus" class="record-status">Ready</span>
+      </div>
+      <p id="recordTime" class="record-time">0:00</p>
+    </section>
+
+    <section class="recordings-section">
+      <h2>Saved recordings</h2>
+      <button type="button" id="refreshBtn" class="btn-secondary">Refresh</button>
+      <div id="recordingsList" class="recordings-list">
+        <p class="empty-message">Loading...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="record.js"></script>
+</body>
+</html>

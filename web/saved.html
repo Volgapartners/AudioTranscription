@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Transcriptions | Volga</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="brand">Volga</a>
+      <div class="tabs">
+        <a href="index.html" class="tab">Homepage</a>
+        <a href="saved.html" class="tab tab-active">Saved</a>
+        <a href="record.html" class="tab">Record</a>
+      </div>
+      <a href="#">Report</a>
+      <a href="#">FAQ</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <h1 class="title">Saved transcriptions</h1>
+    <p class="instruction">Browse audio and transcriptions saved from the homepage</p>
+
+    <section class="saved-section">
+      <button type="button" id="refreshBtn" class="btn-secondary">Refresh</button>
+      <div id="savedList" class="saved-list">
+        <p class="empty-message">Loading...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="saved.js"></script>
+</body>
+</html>

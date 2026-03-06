@@ -15,6 +15,15 @@ credentials.json
 # Workspace output
 /workspace/
 
+# Node (web app)
+web/node_modules/
+
+# Web recordings (user-recorded audio)
+web/recordings/
+
+# Web transcriptions (saved audio + transcription)
+web/transcriptions/
+
 # Test output
 testdata/filled/
 testdata/audio/
