@@ -2,7 +2,6 @@ import './set-public-dir.js'; // must run first so server.js sees VERCEL_PUBLIC_
 import app from '../server.js';
 
 export default function handler(req, res) {
-  const url = req.url || '/';
-  req.url = url.replace(/^\/api/, '') || '/';
+  req.url = req.url || '/';
   return app(req, res);
 }
