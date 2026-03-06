@@ -43,9 +43,11 @@ export default function HomePage() {
   const [progressPercent, setProgressPercent] = useState(0);
   const [audioStatus, setAudioStatus] = useState('No audio loaded');
   const [playing, setPlaying] = useState(false);
+  const [activeUtteranceIndex, setActiveUtteranceIndex] = useState<number | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utterancesBodyRef = useRef<HTMLTableSectionElement>(null);
+  const tableWrapperRef = useRef<HTMLDivElement | null>(null);
 
   const getUtterancesFromTable = useCallback((): Utterance[] => {
     const tbody = utterancesBodyRef.current;
@@ -87,6 +89,7 @@ export default function HomePage() {
       setJsonStatus('JSON status: No transcription yet');
       setRequestDisplay('');
       setUtterances([]);
+      setActiveUtteranceIndex(null);
       const url = URL.createObjectURL(file);
       setAudioUrl(url);
       setAudioStatus('Audio loaded');
@@ -100,6 +103,8 @@ export default function HomePage() {
 
   const onTranscribe = async () => {
     if (!audioFile) return;
+    setUtterances([]);
+    setActiveUtteranceIndex(null);
     setTranscribeDisabled(true);
     setDeepgramDisabled(true);
     setTranscribeStatus('Transcribing...');
@@ -134,6 +139,8 @@ export default function HomePage() {
 
   const onTranscribeDeepgram = async () => {
     if (!audioFile) return;
+    setUtterances([]);
+    setActiveUtteranceIndex(null);
     setDeepgramDisabled(true);
     setTranscribeDisabled(true);
     setDeepgramStatus('Transcribing...');
@@ -302,6 +309,50 @@ export default function HomePage() {
   }, [handleFileChange, renderUtterances]);
 
   const showEmptyRow = utterances.length === 0;
+
+  // Compute which utterance row is active at current playback time
+  const updateActiveUtterance = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || utterances.length === 0) {
+      setActiveUtteranceIndex(null);
+      return;
+    }
+    const t = audio.currentTime;
+    const idx = utterances.findIndex(
+      (u) =>
+        (u.start_time ?? 0) <= t &&
+        (u.end_time == null || u.end_time >= t)
+    );
+    if (idx >= 0) {
+      setActiveUtteranceIndex(idx);
+      return;
+    }
+    let lastPast = -1;
+    for (let i = utterances.length - 1; i >= 0; i--) {
+      if ((utterances[i].start_time ?? 0) <= t) {
+        lastPast = i;
+        break;
+      }
+    }
+    setActiveUtteranceIndex(lastPast >= 0 ? lastPast : 0);
+  }, [utterances]);
+
+  // Sync active row with playback (timeupdate is handled in the audio element)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || utterances.length === 0) return;
+    const onTimeUpdate = () => updateActiveUtterance();
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    updateActiveUtterance();
+    return () => audio.removeEventListener('timeupdate', onTimeUpdate);
+  }, [utterances, updateActiveUtterance]);
+
+  // Scroll the active row into view when it changes
+  useEffect(() => {
+    if (activeUtteranceIndex == null) return;
+    const row = document.getElementById(`utterance-row-${activeUtteranceIndex}`);
+    row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeUtteranceIndex]);
 
   return (
     <main className="main">
@@ -496,7 +547,7 @@ export default function HomePage() {
 
       <section className="utterances-section">
         <h2>Utterances table (editable)</h2>
-        <div className="table-wrapper">
+        <div className="table-wrapper" ref={tableWrapperRef}>
           <table className="utterances-table">
             <thead>
               <tr>
@@ -520,7 +571,11 @@ export default function HomePage() {
                 </tr>
               )}
               {utterances.map((u, i) => (
-                <tr key={i}>
+                <tr
+                  key={i}
+                  id={`utterance-row-${i}`}
+                  className={i === activeUtteranceIndex ? 'utterance-row utterance-row-active' : 'utterance-row'}
+                >
                   <td>
                     <input
                       type="text"
