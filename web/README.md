@@ -13,7 +13,9 @@ A Volga interface for uploading audio, transcribing with Whisper, and editing ut
 1. Install Vercel CLI: `npm i -g vercel`
 2. From the **web** directory: `cd web && vercel`
 3. Set **Root Directory** to `web` (if deploying from repo root: Project Settings → General → Root Directory).
-4. Add environment variable in Vercel: **OPENAI_API_KEY** (Project Settings → Environment Variables).
+4. Add environment variables in Vercel (Project Settings → Environment Variables):
+   - **OPENAI_API_KEY** — for "Transcribe with Whisper"
+   - **DEEPGRAM_API_KEY** — for "Transcribe with Deepgram" (optional)
 5. Redeploy. Your app will be at `https://your-project.vercel.app`.
 
 **Note:** On Vercel, recordings and transcriptions are stored in `/tmp` and are **ephemeral** (lost between invocations or after idle). For persistent storage, add Vercel Blob or another store.
@@ -25,10 +27,10 @@ A Volga interface for uploading audio, transcribing with Whisper, and editing ut
    cd web && npm install
    ```
 
-2. Add your OpenAI API key (for Whisper transcription):
+2. Add your API keys (copy from `.env.example` and edit `.env`):
    ```bash
    cp .env.example .env
-   # Edit .env and add your OPENAI_API_KEY
+   # Edit .env: OPENAI_API_KEY (Whisper), DEEPGRAM_API_KEY (Deepgram, optional)
    ```
 
 3. Start the server:

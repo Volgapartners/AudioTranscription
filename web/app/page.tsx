@@ -32,6 +32,8 @@ export default function HomePage() {
   const [jsonStatus, setJsonStatus] = useState('JSON status: No transcription yet');
   const [transcribeStatus, setTranscribeStatus] = useState('');
   const [transcribeDisabled, setTranscribeDisabled] = useState(true);
+  const [deepgramStatus, setDeepgramStatus] = useState('');
+  const [deepgramDisabled, setDeepgramDisabled] = useState(true);
   const [openAiStatus, setOpenAiStatus] = useState('');
   const [whisperStatus, setWhisperStatus] = useState('');
   const [requestDisplay, setRequestDisplay] = useState('');
@@ -79,7 +81,9 @@ export default function HomePage() {
       setAudioFile(file);
       setFileName(file.name);
       setTranscribeDisabled(false);
+      setDeepgramDisabled(false);
       setTranscribeStatus('');
+      setDeepgramStatus('');
       setJsonStatus('JSON status: No transcription yet');
       setRequestDisplay('');
       setUtterances([]);
@@ -97,7 +101,9 @@ export default function HomePage() {
   const onTranscribe = async () => {
     if (!audioFile) return;
     setTranscribeDisabled(true);
+    setDeepgramDisabled(true);
     setTranscribeStatus('Transcribing...');
+    setDeepgramStatus('');
     try {
       const formData = new FormData();
       formData.append('audio', audioFile);
@@ -122,6 +128,41 @@ export default function HomePage() {
       );
     } finally {
       setTranscribeDisabled(false);
+      setDeepgramDisabled(false);
+    }
+  };
+
+  const onTranscribeDeepgram = async () => {
+    if (!audioFile) return;
+    setDeepgramDisabled(true);
+    setTranscribeDisabled(true);
+    setDeepgramStatus('Transcribing...');
+    setTranscribeStatus('');
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioFile);
+      const res = await fetch('/api/transcribe-deepgram', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? `Server error: ${res.status}`);
+      }
+      const data = (await res.json()) as { utterances: Utterance[] };
+      renderUtterances(data.utterances);
+      setJsonStatus(`JSON status: Loaded (${data.utterances.length} utterances)`);
+      setDeepgramStatus('Transcription complete');
+    } catch (err) {
+      const e = err as Error;
+      setDeepgramStatus(
+        e.message?.includes('fetch') || e.message?.includes('network')
+          ? 'Connection failed. Is the server running?'
+          : e.message ?? 'Transcription failed'
+      );
+    } finally {
+      setTranscribeDisabled(false);
+      setDeepgramDisabled(false);
     }
   };
 
@@ -551,7 +592,16 @@ export default function HomePage() {
           >
             Transcribe with Whisper
           </button>
+          <button
+            type="button"
+            className="btn-transcribe btn-transcribe-deepgram"
+            disabled={deepgramDisabled}
+            onClick={onTranscribeDeepgram}
+          >
+            Transcribe with Deepgram
+          </button>
           <span className="transcribe-status">{transcribeStatus}</span>
+          <span className="transcribe-status">{deepgramStatus}</span>
         </div>
         <div className="footer-actions">
           <label>
