@@ -314,13 +314,25 @@ body {
 }
 
 .table-wrapper {
-  overflow-x: auto;
+  overflow: auto;
   margin-bottom: 16px;
+  max-height: min(60vh, 480px);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-white);
 }
 
 .utterances-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.utterances-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-light);
+  box-shadow: 0 1px 0 var(--border-color);
 }
 
 .utterances-table th,
@@ -329,19 +341,30 @@ body {
   border: 1px solid var(--border-color);
   text-align: left;
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .utterances-table th {
   background: var(--bg-light);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .utterances-table td input {
   width: 100%;
-  padding: 6px 8px;
+  min-width: 0;
+  padding: 8px 10px;
   border: 1px solid transparent;
   background: transparent;
   font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Transcript column: wider and easier to read */
+.utterances-table td:nth-child(4) input,
+.utterances-table th:nth-child(4) {
+  min-width: 200px;
+  max-width: 400px;
 }
 
 .utterances-table td input:focus {
