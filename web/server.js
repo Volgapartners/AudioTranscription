@@ -5,6 +5,8 @@ import express from 'express';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isVercel = process.env.VERCEL === '1';
+// On Vercel, static files live in project root; __dirname can point at the function bundle
+const publicDir = isVercel ? process.cwd() : __dirname;
 
 // Load .env from web/ or project root (local only)
 if (!isVercel) {
@@ -44,8 +46,8 @@ const openai = process.env.OPENAI_API_KEY
     })
   : null;
 
-// Serve static files
-app.use(express.static(path.join(__dirname)));
+// Serve static files (use publicDir so Vercel finds index.html, styles.css, etc.)
+app.use(express.static(publicDir));
 
 // CORS for local dev
 app.use((req, res, next) => {
@@ -360,11 +362,11 @@ app.get('/api/recordings/:filename', (req, res) => {
 });
 
 // SPA fallback
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/record', (req, res) => res.sendFile(path.join(__dirname, 'record.html')));
-app.get('/saved', (req, res) => res.sendFile(path.join(__dirname, 'saved.html')));
+app.get('/', (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+app.get('/record', (req, res) => res.sendFile(path.join(publicDir, 'record.html')));
+app.get('/saved', (req, res) => res.sendFile(path.join(publicDir, 'saved.html')));
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

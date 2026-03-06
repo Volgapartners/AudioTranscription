@@ -6,7 +6,16 @@
   "functions": {
     "api/index.js": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": [
+        "index.html",
+        "record.html",
+        "saved.html",
+        "styles.css",
+        "app.js",
+        "record.js",
+        "saved.js"
+      ]
     }
   }
 }
