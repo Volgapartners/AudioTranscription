@@ -50,16 +50,16 @@ export default function HomePage() {
     if (!tbody) return [];
     const rows = tbody.querySelectorAll('tr:not(.empty-row)');
     return Array.from(rows).map((tr) => {
-      const inputs = tr.querySelectorAll('input');
+      const fields = tr.querySelectorAll('input, textarea');
       return {
-        speaker: inputs[0]?.value ?? 'speaker_01',
-        start_time: parseFloat(inputs[1]?.value ?? '') ?? null,
-        end_time: parseFloat(inputs[2]?.value ?? '') ?? null,
-        transcript: inputs[3]?.value ?? '',
-        emotion: inputs[4]?.value ?? '',
-        language: inputs[5]?.value ?? 'en',
-        locale: inputs[6]?.value ?? 'en',
-        accent: inputs[7]?.value ?? '',
+        speaker: (fields[0] as HTMLInputElement)?.value ?? 'speaker_01',
+        start_time: parseFloat((fields[1] as HTMLInputElement)?.value ?? '') ?? null,
+        end_time: parseFloat((fields[2] as HTMLInputElement)?.value ?? '') ?? null,
+        transcript: (fields[3] as HTMLTextAreaElement)?.value ?? '',
+        emotion: (fields[4] as HTMLInputElement)?.value ?? '',
+        language: (fields[5] as HTMLInputElement)?.value ?? 'en',
+        locale: (fields[6] as HTMLInputElement)?.value ?? 'en',
+        accent: (fields[7] as HTMLInputElement)?.value ?? '',
       };
     });
   }, []);
@@ -455,9 +455,6 @@ export default function HomePage() {
 
       <section className="utterances-section">
         <h2>Utterances table (editable)</h2>
-        <p className="output-hint">
-          Output column: transcription_final (JSON string)
-        </p>
         <div className="table-wrapper">
           <table className="utterances-table">
             <thead>
@@ -504,11 +501,12 @@ export default function HomePage() {
                       data-field="end_time"
                     />
                   </td>
-                  <td>
-                    <input
-                      type="text"
+                  <td className="transcript-cell">
+                    <textarea
+                      className="transcript-textarea"
                       defaultValue={u.transcript ?? ''}
                       data-field="transcript"
+                      rows={3}
                     />
                   </td>
                   <td>

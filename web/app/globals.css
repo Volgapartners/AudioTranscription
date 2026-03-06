@@ -360,11 +360,42 @@ body {
   line-height: 1.45;
 }
 
-/* Transcript column: wider and easier to read */
-.utterances-table td:nth-child(4) input,
-.utterances-table th:nth-child(4) {
+/* Transcript column (<th>transcript</th>): scrollable when data is loaded */
+.utterances-table .transcript-cell {
+  vertical-align: top;
   min-width: 200px;
   max-width: 400px;
+}
+
+.utterances-table .transcript-textarea {
+  display: block;
+  width: 100%;
+  min-width: 180px;
+  max-width: 100%;
+  height: 120px;
+  min-height: 80px;
+  max-height: 180px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: #fafafa;
+  font-size: 14px;
+  line-height: 1.45;
+  font-family: inherit;
+  resize: vertical;
+  overflow-y: scroll;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.utterances-table .transcript-textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  background: white;
+}
+
+.utterances-table th:nth-child(4) {
+  min-width: 200px;
 }
 
 .utterances-table td input:focus {
