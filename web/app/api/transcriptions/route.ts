@@ -6,62 +6,79 @@ import {
   ensureDirs,
 } from '@/lib/storage';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
-  ensureDirs();
-  const formData = await request.formData();
-  const audio = formData.get('audio');
-  const transcriptionJson = formData.get('transcription') as string | null;
-
-  if (!audio || !(audio instanceof File)) {
-    return NextResponse.json(
-      { error: 'No audio file provided' },
-      { status: 400 }
-    );
-  }
-  if (!transcriptionJson) {
-    return NextResponse.json(
-      { error: 'No transcription data provided' },
-      { status: 400 }
-    );
-  }
-
-  let transcription: unknown;
   try {
-    transcription = JSON.parse(transcriptionJson);
-  } catch {
-    return NextResponse.json(
-      { error: 'Invalid transcription JSON' },
-      { status: 400 }
-    );
+    ensureDirs();
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return NextResponse.json({ error: e.message ?? 'Storage init failed' }, { status: 500 });
   }
+  try {
+    const formData = await request.formData();
+    const audio = formData.get('audio');
+    const transcriptionJson = formData.get('transcription') as string | null;
 
-  const id = `t_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-  const dir = path.join(TRANSCRIPTIONS_DIR, id);
-  fs.mkdirSync(dir, { recursive: true });
+    if (!audio || !(audio instanceof File)) {
+      return NextResponse.json(
+        { error: 'No audio file provided' },
+        { status: 400 }
+      );
+    }
+    if (!transcriptionJson) {
+      return NextResponse.json(
+        { error: 'No transcription data provided' },
+        { status: 400 }
+      );
+    }
 
-  const ext = path.extname(audio.name) || '.bin';
-  const audioName = (audio.name || 'audio').replace(/\.[^.]+$/, '') || 'audio';
-  const audioPath = path.join(dir, `audio${ext}`);
-  const arrayBuffer = await audio.arrayBuffer();
-  fs.writeFileSync(audioPath, Buffer.from(arrayBuffer));
+    let transcription: unknown;
+    try {
+      transcription = JSON.parse(transcriptionJson);
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid transcription JSON' },
+        { status: 400 }
+      );
+    }
 
-  const meta = {
-    id,
-    audioName,
-    audioFile: `audio${ext}`,
-    createdAt: new Date().toISOString(),
-    transcription,
-  };
-  fs.writeFileSync(
-    path.join(dir, 'meta.json'),
-    JSON.stringify(meta, null, 2)
-  );
+    const id = `t_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const dir = path.join(TRANSCRIPTIONS_DIR, id);
+    fs.mkdirSync(dir, { recursive: true });
 
-  return NextResponse.json({ ok: true, id });
+    const ext = path.extname(audio.name) || '.bin';
+    const audioName = (audio.name || 'audio').replace(/\.[^.]+$/, '') || 'audio';
+    const audioPath = path.join(dir, `audio${ext}`);
+    const arrayBuffer = await audio.arrayBuffer();
+    fs.writeFileSync(audioPath, Buffer.from(arrayBuffer));
+
+    const meta = {
+      id,
+      audioName,
+      audioFile: `audio${ext}`,
+      createdAt: new Date().toISOString(),
+      transcription,
+    };
+    fs.writeFileSync(
+      path.join(dir, 'meta.json'),
+      JSON.stringify(meta, null, 2)
+    );
+
+    return NextResponse.json({ ok: true, id });
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return NextResponse.json({ error: e.message ?? 'Save failed' }, { status: 500 });
+  }
 }
 
 export async function GET() {
-  ensureDirs();
+  try {
+    ensureDirs();
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return NextResponse.json({ error: e.message ?? 'Storage init failed' }, { status: 500 });
+  }
   try {
     const ids = fs.readdirSync(TRANSCRIPTIONS_DIR).filter((n) => {
       const p = path.join(TRANSCRIPTIONS_DIR, n);

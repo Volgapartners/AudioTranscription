@@ -3,29 +3,46 @@ import fs from 'fs';
 import path from 'path';
 import { RECORDINGS_DIR, ensureDirs } from '@/lib/storage';
 
+export const maxDuration = 30;
+
 export async function POST(request: Request) {
-  ensureDirs();
-  const formData = await request.formData();
-  const audio = formData.get('audio');
-  if (!audio || !(audio instanceof File)) {
-    return NextResponse.json(
-      { error: 'No audio file provided' },
-      { status: 400 }
-    );
+  try {
+    ensureDirs();
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return NextResponse.json({ error: e.message ?? 'Storage init failed' }, { status: 500 });
   }
+  try {
+    const formData = await request.formData();
+    const audio = formData.get('audio');
+    if (!audio || !(audio instanceof File)) {
+      return NextResponse.json(
+        { error: 'No audio file provided' },
+        { status: 400 }
+      );
+    }
 
-  const base = audio.name || `recording_${Date.now()}.wav`;
-  const safe = base.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const filename = safe.endsWith('.wav') ? safe : safe + '.wav';
-  const destPath = path.join(RECORDINGS_DIR, filename);
-  const arrayBuffer = await audio.arrayBuffer();
-  fs.writeFileSync(destPath, Buffer.from(arrayBuffer));
+    const base = audio.name || `recording_${Date.now()}.wav`;
+    const safe = base.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const filename = safe.endsWith('.wav') ? safe : safe + '.wav';
+    const destPath = path.join(RECORDINGS_DIR, filename);
+    const arrayBuffer = await audio.arrayBuffer();
+    fs.writeFileSync(destPath, Buffer.from(arrayBuffer));
 
-  return NextResponse.json({ ok: true, filename });
+    return NextResponse.json({ ok: true, filename });
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return NextResponse.json({ error: e.message ?? 'Upload failed' }, { status: 500 });
+  }
 }
 
 export async function GET() {
-  ensureDirs();
+  try {
+    ensureDirs();
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return NextResponse.json({ error: e.message ?? 'Storage init failed' }, { status: 500 });
+  }
   try {
     const names = fs.readdirSync(RECORDINGS_DIR);
     const files = names

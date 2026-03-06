@@ -2,29 +2,30 @@ import { NextResponse } from 'next/server';
 import { openai } from '@/lib/openai';
 import { toFile } from 'openai';
 
+export const maxDuration = 60;
 const maxRetries = 2;
 
 export async function POST(request: Request) {
-  const formData = await request.formData();
-  const audio = formData.get('audio');
-  if (!audio || !(audio instanceof File)) {
-    return NextResponse.json(
-      { error: 'No audio file provided' },
-      { status: 400 }
-    );
-  }
-
-  if (!openai) {
-    return NextResponse.json(
-      {
-        error:
-          'OPENAI_API_KEY not set. Add it to your .env or environment.',
-      },
-      { status: 500 }
-    );
-  }
-
   try {
+    const formData = await request.formData();
+    const audio = formData.get('audio');
+    if (!audio || !(audio instanceof File)) {
+      return NextResponse.json(
+        { error: 'No audio file provided' },
+        { status: 400 }
+      );
+    }
+
+    if (!openai) {
+      return NextResponse.json(
+        {
+          error:
+            'OPENAI_API_KEY not set. Add it to your .env or environment.',
+        },
+        { status: 500 }
+      );
+    }
+
     const arrayBuffer = await audio.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const file = await toFile(buffer, audio.name, { type: audio.type });

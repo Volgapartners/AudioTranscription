@@ -1,13 +1,4 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api", "destination": "/api" },
-    { "source": "/api/(.*)", "destination": "/api/$1" }
-  ],
-  "functions": {
-    "api/index.js": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  }
+  "framework": "nextjs"
 }
