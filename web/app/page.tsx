@@ -25,6 +25,13 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+const AUDIO_EXTENSIONS = /\.(mp3|mpeg|mpga|wav|m4a|webm|ogg|flac|opus|aac|wma)$/i;
+
+function isAudioFile(file: File): boolean {
+  if (file.type && file.type.startsWith('audio/')) return true;
+  return AUDIO_EXTENSIONS.test(file.name);
+}
+
 export default function HomePage() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState('');
@@ -81,7 +88,7 @@ export default function HomePage() {
   const handleFileChange = useCallback(
     (file: File | null) => {
       if (!file) return;
-      if (!file.type.startsWith('audio/')) {
+      if (!isAudioFile(file)) {
         setTranscribeStatus('Please select an audio file (mp3, wav, etc.)');
         return;
       }
