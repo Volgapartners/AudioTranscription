@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({ utterances });
+    return NextResponse.json({ utterances, rawResponse: transcription });
   } catch (err: unknown) {
     const e = err as { message?: string; code?: string };
     console.error('Transcription error:', err);

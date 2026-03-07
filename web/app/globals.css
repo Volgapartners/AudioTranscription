@@ -220,6 +220,35 @@ body {
   word-break: break-all;
 }
 
+.transcription-json-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bg-white);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.transcription-json-section h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.transcription-json-display {
+  font-size: 12px;
+  font-family: 'SF Mono', Monaco, monospace;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px;
+  margin: 0;
+  max-height: 400px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-primary);
+}
+
 .audio-player {
   background: var(--bg-white);
   padding: 20px;
@@ -451,6 +480,14 @@ body {
 
 .btn-transcribe-deepgram:hover:not(:disabled) {
   background: #1b5e32;
+}
+
+.btn-transcribe-elevenlabs {
+  background: #6b4c9a;
+}
+
+.btn-transcribe-elevenlabs:hover:not(:disabled) {
+  background: #533a7a;
 }
 
 .transcribe-status {

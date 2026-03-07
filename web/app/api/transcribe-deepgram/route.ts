@@ -148,7 +148,7 @@ export async function POST(request: Request) {
     const data = (await deepgramRes.json()) as DeepgramResponse;
     const utterances = mapDeepgramToUtterances(data);
 
-    return NextResponse.json({ utterances });
+    return NextResponse.json({ utterances, rawResponse: data });
   } catch (err: unknown) {
     const e = err as { message?: string; code?: string };
     console.error('Deepgram transcription error:', err);

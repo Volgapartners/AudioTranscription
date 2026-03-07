@@ -34,6 +34,10 @@ export default function HomePage() {
   const [transcribeDisabled, setTranscribeDisabled] = useState(true);
   const [deepgramStatus, setDeepgramStatus] = useState('');
   const [deepgramDisabled, setDeepgramDisabled] = useState(true);
+  const [elevenlabsStatus, setElevenlabsStatus] = useState('');
+  const [elevenlabsDisabled, setElevenlabsDisabled] = useState(true);
+  const [elevenlabs2Status, setElevenlabs2Status] = useState('');
+  const [elevenlabs2Disabled, setElevenlabs2Disabled] = useState(true);
   const [openAiStatus, setOpenAiStatus] = useState('');
   const [whisperStatus, setWhisperStatus] = useState('');
   const [requestDisplay, setRequestDisplay] = useState('');
@@ -44,6 +48,8 @@ export default function HomePage() {
   const [audioStatus, setAudioStatus] = useState('No audio loaded');
   const [playing, setPlaying] = useState(false);
   const [activeUtteranceIndex, setActiveUtteranceIndex] = useState<number | null>(null);
+  const [rawApiResponse, setRawApiResponse] = useState<unknown>(null);
+  const [rawApiResponseSource, setRawApiResponseSource] = useState<string>('');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utterancesBodyRef = useRef<HTMLTableSectionElement>(null);
@@ -84,8 +90,12 @@ export default function HomePage() {
       setFileName(file.name);
       setTranscribeDisabled(false);
       setDeepgramDisabled(false);
+      setElevenlabsDisabled(false);
+      setElevenlabs2Disabled(false);
       setTranscribeStatus('');
       setDeepgramStatus('');
+      setElevenlabsStatus('');
+      setElevenlabs2Status('');
       setJsonStatus('JSON status: No transcription yet');
       setRequestDisplay('');
       setUtterances([]);
@@ -107,8 +117,12 @@ export default function HomePage() {
     setActiveUtteranceIndex(null);
     setTranscribeDisabled(true);
     setDeepgramDisabled(true);
+    setElevenlabsDisabled(true);
+    setElevenlabs2Disabled(true);
     setTranscribeStatus('Transcribing...');
     setDeepgramStatus('');
+    setElevenlabsStatus('');
+    setElevenlabs2Status('');
     try {
       const formData = new FormData();
       formData.append('audio', audioFile);
@@ -120,10 +134,12 @@ export default function HomePage() {
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { error?: string }).error ?? `Server error: ${res.status}`);
       }
-      const data = (await res.json()) as { utterances: Utterance[] };
+      const data = (await res.json()) as { utterances: Utterance[]; rawResponse?: unknown };
       renderUtterances(data.utterances);
       setJsonStatus(`JSON status: Loaded (${data.utterances.length} utterances)`);
       setTranscribeStatus('Transcription complete');
+      setRawApiResponse(data.rawResponse ?? null);
+      setRawApiResponseSource('Whisper');
     } catch (err) {
       const e = err as Error;
       setTranscribeStatus(
@@ -134,6 +150,8 @@ export default function HomePage() {
     } finally {
       setTranscribeDisabled(false);
       setDeepgramDisabled(false);
+      setElevenlabsDisabled(false);
+      setElevenlabs2Disabled(false);
     }
   };
 
@@ -143,8 +161,12 @@ export default function HomePage() {
     setActiveUtteranceIndex(null);
     setDeepgramDisabled(true);
     setTranscribeDisabled(true);
+    setElevenlabsDisabled(true);
+    setElevenlabs2Disabled(true);
     setDeepgramStatus('Transcribing...');
     setTranscribeStatus('');
+    setElevenlabsStatus('');
+    setElevenlabs2Status('');
     try {
       const formData = new FormData();
       formData.append('audio', audioFile);
@@ -156,10 +178,12 @@ export default function HomePage() {
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { error?: string }).error ?? `Server error: ${res.status}`);
       }
-      const data = (await res.json()) as { utterances: Utterance[] };
+      const data = (await res.json()) as { utterances: Utterance[]; rawResponse?: unknown };
       renderUtterances(data.utterances);
       setJsonStatus(`JSON status: Loaded (${data.utterances.length} utterances)`);
       setDeepgramStatus('Transcription complete');
+      setRawApiResponse(data.rawResponse ?? null);
+      setRawApiResponseSource('Deepgram');
     } catch (err) {
       const e = err as Error;
       setDeepgramStatus(
@@ -170,6 +194,97 @@ export default function HomePage() {
     } finally {
       setTranscribeDisabled(false);
       setDeepgramDisabled(false);
+      setElevenlabsDisabled(false);
+      setElevenlabs2Disabled(false);
+    }
+  };
+
+  const onTranscribeElevenlabs = async () => {
+    if (!audioFile) return;
+    setUtterances([]);
+    setActiveUtteranceIndex(null);
+    setElevenlabsDisabled(true);
+    setTranscribeDisabled(true);
+    setDeepgramDisabled(true);
+    setElevenlabs2Disabled(true);
+    setElevenlabsStatus('Transcribing...');
+    setTranscribeStatus('');
+    setDeepgramStatus('');
+    setElevenlabs2Status('');
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioFile);
+      const res = await fetch('/api/transcribe-elevenlabs', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? `Server error: ${res.status}`);
+      }
+      const data = (await res.json()) as { utterances: Utterance[]; rawResponse?: unknown };
+      renderUtterances(data.utterances);
+      setJsonStatus(`JSON status: Loaded (${data.utterances.length} utterances)`);
+      setElevenlabsStatus('Transcription complete');
+      setRawApiResponse(data.rawResponse ?? null);
+      setRawApiResponseSource('ElevenLabs');
+    } catch (err) {
+      const e = err as Error;
+      setElevenlabsStatus(
+        e.message?.includes('fetch') || e.message?.includes('network')
+          ? 'Connection failed. Is the server running?'
+          : e.message ?? 'Transcription failed'
+      );
+    } finally {
+      setTranscribeDisabled(false);
+      setDeepgramDisabled(false);
+      setElevenlabsDisabled(false);
+      setElevenlabs2Disabled(false);
+    }
+  };
+
+  const onTranscribeElevenlabs2 = async () => {
+    if (!audioFile) return;
+    setUtterances([]);
+    setActiveUtteranceIndex(null);
+    setElevenlabs2Disabled(true);
+    setTranscribeDisabled(true);
+    setDeepgramDisabled(true);
+    setElevenlabsDisabled(true);
+    setElevenlabs2Status('Transcribing...');
+    setTranscribeStatus('');
+    setDeepgramStatus('');
+    setElevenlabsStatus('');
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioFile);
+      formData.append('language_code', 'en');
+      const res = await fetch('/api/transcribe-elevenlabs-v2', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? `Server error: ${res.status}`);
+      }
+      const data = (await res.json()) as { utterances: Utterance[]; rawResponse?: unknown };
+      renderUtterances(data.utterances);
+      setJsonStatus(`JSON status: Loaded (${data.utterances.length} utterances)`);
+      setElevenlabs2Status('Transcription complete');
+      setRawApiResponse(data.rawResponse ?? null);
+      setRawApiResponseSource('ElevenLabs2');
+    } catch (err) {
+      const e = err as Error;
+      setElevenlabs2Status(
+        e.message?.includes('fetch') || e.message?.includes('network')
+          ? 'Connection failed. Is the server running?'
+          : e.message ?? 'Transcription failed'
+      );
+    } finally {
+      setTranscribeDisabled(false);
+      setDeepgramDisabled(false);
+      setElevenlabsDisabled(false);
+      setElevenlabs2Disabled(false);
     }
   };
 
@@ -655,8 +770,26 @@ export default function HomePage() {
           >
             Transcribe with Deepgram
           </button>
+          <button
+            type="button"
+            className="btn-transcribe btn-transcribe-elevenlabs"
+            disabled={elevenlabsDisabled}
+            onClick={onTranscribeElevenlabs}
+          >
+            Transcribe with ElevenLabs
+          </button>
+          <button
+            type="button"
+            className="btn-transcribe btn-transcribe-elevenlabs"
+            disabled={elevenlabs2Disabled}
+            onClick={onTranscribeElevenlabs2}
+          >
+            Eleven Transcribe 2
+          </button>
           <span className="transcribe-status">{transcribeStatus}</span>
           <span className="transcribe-status">{deepgramStatus}</span>
+          <span className="transcribe-status">{elevenlabsStatus}</span>
+          <span className="transcribe-status">{elevenlabs2Status}</span>
         </div>
         <div className="footer-actions">
           <label>
@@ -686,6 +819,24 @@ export default function HomePage() {
             Submit
           </button>
         </div>
+      </section>
+
+      <section className="transcription-json-section">
+        <h2>Transcription result (JSON)</h2>
+        <pre className="transcription-json-display">
+          {utterances.length > 0
+            ? JSON.stringify({ utterances }, null, 2)
+            : 'Run Whisper, Deepgram, ElevenLabs, or Eleven Transcribe 2 to see the result here.'}
+        </pre>
+      </section>
+
+      <section className="transcription-json-section">
+        <h2>Raw API response{rawApiResponseSource ? ` (${rawApiResponseSource})` : ''}</h2>
+        <pre className="transcription-json-display">
+          {rawApiResponse != null
+            ? JSON.stringify(rawApiResponse, null, 2)
+            : 'Transcribe with any provider to see the raw API response here.'}
+        </pre>
       </section>
     </main>
   );
