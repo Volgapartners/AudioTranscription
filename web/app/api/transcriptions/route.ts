@@ -5,6 +5,7 @@ import {
   TRANSCRIPTIONS_DIR,
   ensureDirs,
 } from '@/lib/storage';
+import { getSafeBasename } from '@/lib/file';
 
 export const maxDuration = 60;
 
@@ -20,7 +21,12 @@ export async function POST(request: Request) {
     const audio = formData.get('audio');
     const transcriptionJson = formData.get('transcription') as string | null;
 
-    if (!audio || !(audio instanceof File)) {
+    const isFileOrBlob =
+      audio !== null &&
+      typeof audio === 'object' &&
+      typeof (audio as Blob).arrayBuffer === 'function' &&
+      ((audio as object) instanceof File || (audio as object) instanceof Blob);
+    if (!isFileOrBlob) {
       return NextResponse.json(
         { error: 'No audio file provided' },
         { status: 400 }
@@ -47,10 +53,13 @@ export async function POST(request: Request) {
     const dir = path.join(TRANSCRIPTIONS_DIR, id);
     fs.mkdirSync(dir, { recursive: true });
 
-    const ext = path.extname(audio.name) || '.bin';
-    const audioName = (audio.name || 'audio').replace(/\.[^.]+$/, '') || 'audio';
+    const fileOrBlob = audio as File | Blob;
+    const fileName = fileOrBlob instanceof File ? fileOrBlob.name : undefined;
+    const safeName = getSafeBasename(fileName);
+    const ext = path.extname(safeName) || '.bin';
+    const audioName = safeName.replace(/\.[^.]+$/, '') || 'audio';
     const audioPath = path.join(dir, `audio${ext}`);
-    const arrayBuffer = await audio.arrayBuffer();
+    const arrayBuffer = await fileOrBlob.arrayBuffer();
     fs.writeFileSync(audioPath, Buffer.from(arrayBuffer));
 
     const meta = {

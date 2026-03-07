@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { openai } from '@/lib/openai';
 import { toFile } from 'openai';
+import { getSafeBasename } from '@/lib/file';
 
 export const maxDuration = 60;
 const maxRetries = 2;
@@ -9,7 +10,12 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const audio = formData.get('audio');
-    if (!audio || !(audio instanceof File)) {
+    const isFileOrBlob =
+      audio !== null &&
+      typeof audio === 'object' &&
+      typeof (audio as Blob).arrayBuffer === 'function' &&
+      ((audio as object) instanceof File || (audio as object) instanceof Blob);
+    if (!isFileOrBlob) {
       return NextResponse.json(
         { error: 'No audio file provided' },
         { status: 400 }
@@ -26,9 +32,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const arrayBuffer = await audio.arrayBuffer();
+    const fileOrBlob = audio as File | Blob;
+    const arrayBuffer = await fileOrBlob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const file = await toFile(buffer, audio.name, { type: audio.type });
+    const name = fileOrBlob instanceof File ? fileOrBlob.name : undefined;
+    const type = fileOrBlob instanceof File ? fileOrBlob.type : undefined;
+    const file = await toFile(buffer, getSafeBasename(name), { type: type });
 
     let transcription;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {

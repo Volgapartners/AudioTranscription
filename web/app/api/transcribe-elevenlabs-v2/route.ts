@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getSafeBasename } from '@/lib/file';
 
 export const maxDuration = 60;
 
@@ -132,19 +133,29 @@ export async function POST(request: Request) {
     const audio = formData.get('audio');
     const languageCode = (formData.get('language_code') as string) || 'en';
 
-    if (!audio || !(audio instanceof File)) {
+    const isFileOrBlob =
+      audio !== null &&
+      typeof audio === 'object' &&
+      typeof (audio as Blob).arrayBuffer === 'function' &&
+      ((audio as object) instanceof File || (audio as object) instanceof Blob);
+    if (!isFileOrBlob) {
       return NextResponse.json(
         { error: 'No audio file provided' },
         { status: 400 }
       );
     }
 
+    const fileOrBlob = audio as File | Blob;
+    const arrayBuffer = await fileOrBlob.arrayBuffer();
+    const name = fileOrBlob instanceof File ? fileOrBlob.name : undefined;
+    const type = fileOrBlob instanceof File ? fileOrBlob.type : undefined;
+    const safeName = getSafeBasename(name);
     const body = new FormData();
     body.append('model_id', 'scribe_v2');
     body.append('diarize', 'true');
     body.append('tag_audio_events', 'true');
     body.append('language_code', languageCode);
-    body.append('file', audio, audio.name);
+    body.append('file', new Blob([arrayBuffer], { type: type || 'audio/mpeg' }), safeName);
 
     const res = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
